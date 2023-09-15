@@ -129,3 +129,4 @@ dist
 
 # Config Files
 config.json
+daemon
