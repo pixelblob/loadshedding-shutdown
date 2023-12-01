@@ -6,20 +6,12 @@ const fs = require("fs")
 var countdownTimeout
 var powerrestoreTimeout
 
-try {
-    require("./config.json")
-} catch (error) {
-    fs.writeFileSync("./config.json", JSON.stringify({
-        "shutdownCmd": "shutdown -h",
-        "shutdownMsg": "<@290444481743028224> Shutting down due to loadshedding!",
-        "shutdownGeneratorMsg": "<@290444481743028224> PC WAS ON DURING LOADSHEDDING, SHUTTING DOWN AGAIN INCASE GENERATOR WAS ON!",
-        "wakeupMsg": "<@290444481743028224> PC has been asleep for $seconds",
-        "webhookUrl": "https://discord.com/api/webhooks/0000000000000000000/DISCORD-WEBHOOK-URL-HERE",
-        "port": 3000
-    }, null, 4))
-}
+const {generateConfigIfNotExist} = require("./utils/config")
+generateConfigIfNotExist()
 
-const { shutdownCmd, shutdownGeneratorMsg, shutdownMsg, webhookUrl, wakeupMsg, port } = require("./config.json")
+
+
+const { shutdownCmd, shutdownGeneratorMsg, shutdownMsg, webhookUrl, wakeupMsg, port, area } = require("./config.json")
 
 var nextDate;
 
@@ -71,7 +63,7 @@ async function run() {
     clearTimeout(powerrestoreTimeout)
     try {
         nextDate = null
-        let data = (await axios.get(`https://esp.info/api/4.1/area_events/ethekwini3-3b-kloof`)).data
+        let data = (await axios.get(`https://esp.info/api/4.1/area_events/${area}`)).data
         var ev
 
         /* for (const event of data.area_events) {
