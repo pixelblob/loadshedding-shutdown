@@ -130,3 +130,4 @@ dist
 # Config Files
 config.json
 daemon
+last_shutdown

@@ -21,16 +21,33 @@ try {
 
 const { shutdownCmd, shutdownGeneratorMsg, shutdownMsg, webhookUrl, wakeupMsg, port } = require("./config.json")
 
-var nextDate
+var nextDate;
 
-if (fs.existsSync("./last_shutdown")) {
-    console.log("SHUTDOWN DATA FOUND!")
-    var time = new Date(+fs.readFileSync("./last_shutdown", { encoding: "utf-8" }))
-    fs.unlinkSync("./last_shutdown")
-    console.log(time)
-    var seconds = (new Date().getTime() - time.getTime()) / 1000
-    sendMessage(wakeupMsg.replaceAll("$seconds", new Date(seconds * 1000).toISOString().substr(11, 8)))
-}
+(async ()=>{
+    console.log("Checking if we have internet access!")
+    while (!await isOnline()) {
+        await new Promise(r => setTimeout(r, 5000));
+    }
+    console.log("We have internet access!")
+
+    if (fs.existsSync("./last_shutdown")) {
+        console.log("SHUTDOWN DATA FOUND!")
+        var time = new Date(+fs.readFileSync("./last_shutdown", { encoding: "utf-8" }))
+        fs.unlinkSync("./last_shutdown")
+        console.log(time)
+        var seconds = (new Date().getTime() - time.getTime()) / 1000
+        await sendMessage(wakeupMsg.replaceAll("$seconds", new Date(seconds * 1000).toISOString().substr(11, 8)))
+    }
+
+    run()
+    setInterval(run, 1000 * 30);
+
+    app.listen(port, () => {
+        console.log(`Example app listening on port ${port}`)
+    })
+})()
+
+
 
 
 app.get('/', (req, res) => {
@@ -139,13 +156,6 @@ async function run() {
     }
 }
 
-run()
-
-setInterval(run, 1000 * 30);
-
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-})
 
 function shutdown() {
     const shutdown = exec(shutdownCmd, function (error, stdout, stderr) {
@@ -172,5 +182,14 @@ async function sendMessage(content) {
         })
     } catch (error) {
         console.log(error)
+    }
+}
+
+async function isOnline() {
+    try {
+        var res = await axios.get("https://github.com/major/icanhaz")
+        return true
+    } catch (error) {
+        return false
     }
 }
