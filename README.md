@@ -14,4 +14,8 @@ config.json Template:
 }
 ```
 
+Install The NPM modules: `npm install`
+
+Select your area by running `node areaSearch.js`
+
 Program can be started by running `node index.js` in the folder or can be installed as a windows service by running `node installServiceWindows.js`
